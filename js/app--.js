@@ -90,8 +90,8 @@
         }
 
         let gameState = {
-            blueTeam: { name: 'EQUIPO AZUL', participants: ['Juan Camilo', 'Andres Eduardo', 'Francy\'s', 'Jaider', 'Luis', 'Laura', 'Rafael'], score: 0 },
-            redTeam: { name: 'EQUIPO ROJO', participants: ['Jesús David', 'Carlos', 'Withman', 'Marbin', 'Carla', 'Nuvia', 'Freddy', 'Andres Felipe'], score: 0 },
+            blueTeam: { name: 'EQUIPO AZUL', participants: ['Juan Camilo', 'Andres Eduardo', 'Francy\'s', 'Jaider', 'Luis', 'Laura'], score: 0 },
+            redTeam: { name: 'EQUIPO ROJO', participants: ['Jesús David', 'Carlos', 'Withman', 'Carla', 'Freddy', 'Andres Felipe'], score: 0 },
             boardSize: 6,
             lines: { horizontal: [], vertical: [] },
             boxes: [],
@@ -99,7 +99,7 @@
             allParticipants: [],
             remainingMoves: 0,
             hasRolled: false,
-            consecutiveCaptures: 0, // Control Fair Play (Máx 3 repeticiones seguidas)
+            turnCaptures: 0, // Control Fair Play: cuadros capturados en el turno del jugador (máx. 3)
             gameOver: false,
             isLightMode: false
         };
@@ -156,6 +156,10 @@
             const saved = localStorage.getItem('timbiriche_neon_save');
             if (saved) {
                 gameState = JSON.parse(saved);
+                if (gameState.turnCaptures === undefined) {
+                    gameState.turnCaptures = gameState.consecutiveCaptures || 0; // partidas guardadas antes del cambio
+                    delete gameState.consecutiveCaptures;
+                }
                 if (gameState.isLightMode) {
                     document.body.classList.add('light-mode');
                     document.getElementById('themeToggleBtn').innerText = '🌙';
@@ -173,6 +177,8 @@
            // document.getElementById('coinBlueName').innerText = gameState.blueTeam.name.substring(0, 10);
             //document.getElementById('coinRedName').innerText = gameState.redTeam.name.substring(0, 10);
             document.getElementById('coinResultText').innerText = '¡Listo para el volado!';
+            coinBusy = false;
+            setCoinButtonsDisabled(false);
             
               // Mostrar modal de moneda en lugar de iniciar de golpe
             document.getElementById('coinFlipModal').classList.add('active');
@@ -194,15 +200,24 @@
             gameState.currentTurnIndex = 0;
             gameState.remainingMoves = 0;
             gameState.hasRolled = false;
-            gameState.consecutiveCaptures = 0;
+            gameState.turnCaptures = 0;
             gameState.gameOver = false;
 
             startGameSession(false);
         });
 
         let currentCoinRotationY = 0;
+        let coinBusy = false;
+
+        function setCoinButtonsDisabled(disabled) {
+            document.getElementById('flipCoinBtn').disabled = disabled;
+            document.getElementById('skipCoinBtn').disabled = disabled;
+        }
 
         document.getElementById('flipCoinBtn').addEventListener('click', () => {
+            if (coinBusy) return;
+            coinBusy = true;
+            setCoinButtonsDisabled(true);
             const coin = document.getElementById('coin3d');
             const resultText = document.getElementById('coinResultText');
             sound.coinFlip();
@@ -230,6 +245,9 @@
         });
 
         document.getElementById('skipCoinBtn').addEventListener('click', () => {
+            if (coinBusy) return;
+            coinBusy = true;
+            setCoinButtonsDisabled(true);
             setupParticipantsAndStart('blue'); // Por defecto arranca azul si se omite
         });
 
@@ -261,7 +279,7 @@
             gameState.currentTurnIndex = 0;
             gameState.remainingMoves = 0;
             gameState.hasRolled = false;
-            gameState.consecutiveCaptures = 0;
+            gameState.turnCaptures = 0;
             gameState.gameOver = false;
 
             setTimeout(() => {
@@ -382,6 +400,18 @@
             }
         }
 
+        const MAX_CAPTURES_PER_TURN = 3;
+
+        // Pasa el turno al siguiente jugador y reinicia el contador de cuadros del turno
+        function endTurn() {
+            gameState.hasRolled = false;
+            gameState.remainingMoves = 0;
+            gameState.turnCaptures = 0;
+            gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.allParticipants.length;
+            sound.turn();
+            addLog(`Turno de ${gameState.allParticipants[gameState.currentTurnIndex].name}.`);
+        }
+
         function handleLineClick(type, r, c) {
             if (gameState.gameOver) return;
             if (!gameState.hasRolled || gameState.remainingMoves <= 0) {
@@ -418,32 +448,27 @@
 
             if (scoredBoxes > 0) {
                 sound.capture();
-                gameState.consecutiveCaptures++;
+                // Cada cuadro cuenta: una sola línea puede cerrar 2 cuadros a la vez
+                gameState.turnCaptures += scoredBoxes;
 
-                // REGLA DE JUEGO LIMPIO: Máximo 3 repeticiones seguidas por jugador
-                if (gameState.consecutiveCaptures >= 3) {
-                    addLog(`${currentParticipant.name} alcanzó el límite de 3 capturas seguidas. Turno finalizado por Fair Play.`);
-                    gameState.hasRolled = false;
-                    gameState.remainingMoves = 0;
-                    gameState.consecutiveCaptures = 0;
-                    gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.allParticipants.length;
-                    sound.turn();
-                    addLog(`Turno de ${gameState.allParticipants[gameState.currentTurnIndex].name}.`);
+                if (gameState.turnCaptures >= MAX_CAPTURES_PER_TURN) {
+                    // REGLA DE JUEGO LIMPIO: máximo 3 cuadros por turno de jugador
+                    addLog(`${currentParticipant.name} llegó al límite de ${MAX_CAPTURES_PER_TURN} cuadros en su turno (Fair Play).`);
+                    endTurn();
+                } else if (gameState.remainingMoves > 0) {
+                    // Los movimientos del dado NO se pierden por hacer un cuadro
+                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) y conserva ${gameState.remainingMoves} movimiento(s).`);
                 } else {
-                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) y repite turno.`);
+                    // Cerró con su último movimiento: vuelve a lanzar (el contador del turno se mantiene)
+                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) con su último movimiento y vuelve a lanzar (${gameState.turnCaptures}/${MAX_CAPTURES_PER_TURN}).`);
                     gameState.hasRolled = false;
                     gameState.remainingMoves = 0;
                 }
                 updateUI();
-            } else {
-                if (gameState.remainingMoves <= 0) {
-                    gameState.hasRolled = false;
-                    gameState.consecutiveCaptures = 0; // Reiniciar contador al perder el turno normalmente
-                    gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.allParticipants.length;
-                    sound.turn();
-                    addLog(`Turno de ${gameState.allParticipants[gameState.currentTurnIndex].name}.`);
-                    updateUI();
-                }
+            } else if (gameState.remainingMoves <= 0) {
+                // Último movimiento sin cerrar cuadro: pasa el turno
+                endTurn();
+                updateUI();
             }
 
             saveGame();
@@ -538,7 +563,7 @@
             diceFace.className = `dice-face ${currentParticipant.team}-dice`;
 
             document.getElementById('movesCounterText').innerHTML = `Movimientos restantes: <span>${gameState.remainingMoves}</span>`;
-            document.getElementById('consecutiveCounterText').innerHTML = `Capturas consecutivas: <span>${gameState.consecutiveCaptures}/3</span>`;
+            document.getElementById('consecutiveCounterText').innerHTML = `Cuadros en este turno: <span>${gameState.turnCaptures}/3</span>`;
 
             const listEl = document.getElementById('activeParticipantsList');
             listEl.innerHTML = '';
@@ -626,7 +651,7 @@
                 gameState.currentTurnIndex = 0;
                 gameState.remainingMoves = 0;
                 gameState.hasRolled = false;
-                gameState.consecutiveCaptures = 0;
+                gameState.turnCaptures = 0;
                 gameState.gameOver = false;
                 buildBoardDOM();
                 updateUI();
@@ -665,3 +690,12 @@
         });
 
         window.onload = () => { initConfigUI(); };
+
+        // --- PWA: REGISTRO DEL SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado. Scope:', reg.scope))
+                    .catch(err => console.warn('No se pudo registrar el SW:', err));
+            });
+        }

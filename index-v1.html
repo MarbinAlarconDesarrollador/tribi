@@ -26,7 +26,7 @@
 
     <!-- Botones Superiores Flotantes (Audio, Modo Oscuro/Claro, Ayuda/Reglas) -->
     <div class="top-controls">
-        <!--<button class="top-btn" id="helpBtn" title="Reglas del Juego">❓</button> -->
+        <button class="top-btn" id="helpBtn" title="Reglas del Juego">❓</button>
         <button class="top-btn" id="themeToggleBtn" title="Cambiar Tema Claro/Oscuro">☀️</button>
         <button class="top-btn" id="audioToggleBtn" title="Activar/Desactivar Sonido">🔊</button>
     </div>
@@ -44,7 +44,7 @@
                 </div>
                 <br>
                 <div class="coin-img-small">
-                    <p>Sello </p>
+                    <p></p>Sello </p>
                     <img src="./img/sello-moneda.png" alt="Sello Moneda">
                     <p> = Equipo Rojo </p>
                 </div>
@@ -141,7 +141,7 @@
     <!-- ==================== PANTALLA 2: JUEGO ==================== -->
     <div id="gameScreen" class="screen">
         <div class="score-board">
-
+            <span class="current-turn-banner"> A JUGAR  </span>
             <!-- <div class="current-turn-banner">
                 <span class="turn-label">TURNO ACTUAL</span>
                 <span class="turn-player blue" id="currentTurnText">MARBIN — AZUL</span>
@@ -165,8 +165,8 @@
                     <button class="btn dice-btn" id="rollDiceBtn">🎲 LANZAR DADO</button>
                 </div>
                 <div class="moves-counter" id="movesCounterText">Movimientos restantes: <span>0</span></div>
-                <div class="moves-counter" id="consecutiveCounterText" style="font-size: 0.75rem;">Cuadros en este
-                    turno: <span>0/3</span></div>
+                <div class="moves-counter" id="consecutiveCounterText" style="font-size: 0.75rem;">Capturas
+                    consecutivas: <span>0/3</span></div>
                 <div class="current-turn-banner">
                     <span class="turn-label">TURNO ACTUAL</span>
                     <span class="turn-player blue" id="currentTurnText">MARBIN — AZUL</span>
@@ -230,16 +230,14 @@
                 </div>
                 <div>
                     <h4>4. Turno Extra</h4>
-                    Si cierras un cuadrado con tu <strong>último</strong> movimiento del dado, vuelves a lanzar
-                    el dado dentro del mismo turno. Si tu último movimiento no cierra ningún cuadrado, el turno pasa
-                    al siguiente jugador.
+                    Si cierras un cuadrado con tu <strong>último</strong> movimiento del dado, repites turno y
+                    lanzas el dado de nuevo. Si no cierras ninguno, el turno pasa al siguiente jugador.
                 </div>
                 <div>
                     <h4>5. Regla de Juego Limpio (Fair Play)</h4>
-                    Un jugador puede conquistar como <strong>máximo 3 cuadrados por turno</strong>, sumando todos
-                    sus lanzamientos (incluidos los extra). Cada cuadrado cuenta, aunque una sola línea cierre dos.
-                    Al conquistar el tercero, el turno pasa automáticamente al siguiente jugador, aunque le queden
-                    movimientos. El contador <em>“Cuadros en este turno”</em> se reinicia cuando cambia el turno.
+                    Para equilibrar la partida, un mismo jugador puede encadenar un <strong>máximo de 3
+                    capturas seguidas</strong>. Al llegar al límite, el turno pasa automáticamente al siguiente
+                    jugador, aunque le queden movimientos.
                 </div>
             </div>
 

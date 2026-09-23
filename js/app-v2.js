@@ -429,8 +429,12 @@
                     gameState.currentTurnIndex = (gameState.currentTurnIndex + 1) % gameState.allParticipants.length;
                     sound.turn();
                     addLog(`Turno de ${gameState.allParticipants[gameState.currentTurnIndex].name}.`);
+                } else if (gameState.remainingMoves > 0) {
+                    // Aún le quedan movimientos del dado: se conservan y NO se vuelve a lanzar
+                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) y conserva ${gameState.remainingMoves} movimiento(s).`);
                 } else {
-                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) y repite turno.`);
+                    // Capturó con su último movimiento: gana repetir turno (nuevo lanzamiento)
+                    addLog(`${currentParticipant.name} conquistó ${scoredBoxes} cuadrado(s) con su último movimiento y repite turno.`);
                     gameState.hasRolled = false;
                     gameState.remainingMoves = 0;
                 }
@@ -665,3 +669,13 @@
         });
 
         window.onload = () => { initConfigUI(); };
+
+
+        // --- PWA: REGISTRO DEL SERVICE WORKER ---
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado. Scope:', reg.scope))
+                    .catch(err => console.warn('No se pudo registrar el SW:', err));
+            });
+        }
