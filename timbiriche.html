@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TIMBIRICHE</title>
+        <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="./img/pwa-icon-192.png">
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800;900&display=swap"
+        rel="stylesheet">
+
+</head>
+
+<body>
+
+    <!-- Botones Superiores Flotantes (Audio, Modo Oscuro/Claro, Ayuda/Reglas) -->
+    <div class="top-controls">
+        <button class="top-btn" id="helpBtn" title="Reglas del Juego">❓</button>
+        <button class="top-btn" id="themeToggleBtn" title="Cambiar Tema Claro/Oscuro">☀️</button>
+        <button class="top-btn" id="audioToggleBtn" title="Activar/Desactivar Sonido">🔊</button>
+    </div>
+
+    <!-- ==================== MODAL SORTEO MONEDA 3D ==================== -->
+    <div class="modal-overlay" id="coinFlipModal">
+        <div class="modal-card" style="max-width: 420px;">
+            <div class="modal-title" style="color: var(--yellow-pop);">🪙 SORTEO INICIAL</div>
+            <div class="modal-subtitle">¡Lanza la moneda para decidir qué equipo comienza la batalla!</div>
+            <div class="modal-subtitle">
+                <div class="coin-img-small">
+                    <p>Cara </p>
+                    <img src="./img/cara-moneda.png" alt="Cara Moneda">
+                    <p> = Equipo Azul </p> 
+                </div>
+                <br>
+                <div class="coin-img-small">
+                    <p></p>Sello </p>
+                    <img src="./img/sello-moneda.png" alt="Sello Moneda">
+                    <p> = Equipo Rojo </p>
+                </div>
+            </div>
+
+            <div class="coin-stage">
+                <div class="coin-3d" id="coin3d">
+                    <div class="coin-face coin-front">
+                        <img src="./img/cara-moneda.png" alt="Cara Moneda" class="coin-img">
+                    </div>
+                    <div class="coin-face coin-back">
+                        <img src="./img/sello-moneda.png" alt="Sello Moneda" class="coin-img">
+                    </div>
+                </div>
+            </div>
+
+            <div id="coinResultText"
+                style="font-family: var(--font-display); font-size: 1.1rem; min-height: 30px; font-weight: 700; color: var(--text-main);">
+                ¡Listo para el volado!
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-start" id="flipCoinBtn" style="flex: 1;">🎲 LANZAR MONEDA</button>
+                <button class="btn red-btn" id="skipCoinBtn" style="font-size: 0.9rem;">Omitir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PANTALLA 1: CONFIGURACIÓN ==================== -->
+    <div id="configScreen" class="screen active">
+        <div class="config-container">
+            <h1 class="game-title">TIMBIRICHE 🎉<br><span
+                    style="font-size: 1.15rem; font-family: var(--font-family); font-weight: 800; letter-spacing: 3px; color: var(--text-muted); -webkit-text-stroke: 0; text-shadow: none;">¡BATALLA
+                    DE PUNTOS!</span></h1>
+
+            <div class="config-grid">
+                <!-- Equipo Azul -->
+                <div class="team-config blue">
+                    <div class="input-group">
+                        <label>Nombre del Equipo Azul</label>
+                        <input type="text" id="blueTeamName" value="EQUIPO AZUL">
+                    </div>
+                    <div class="input-group">
+                        <label>Participantes</label>
+                        <div class="add-participant-row">
+                            <input type="text" id="blueNewParticipant" placeholder="Nombre participante">
+                            <button class="btn" id="blueAddBtn">+</button>
+                        </div>
+                    </div>
+                    <div class="participants-list" id="blueParticipantsList"></div>
+                </div>
+
+                <!-- Equipo Rojo -->
+                <div class="team-config red">
+                    <div class="input-group">
+                        <label>Nombre del Equipo Rojo</label>
+                        <input type="text" id="redTeamName" value="EQUIPO ROJO">
+                    </div>
+                    <div class="input-group">
+                        <label>Participantes</label>
+                        <div class="add-participant-row">
+                            <input type="text" id="redNewParticipant" placeholder="Nombre participante">
+                            <button class="btn red-btn" id="redAddBtn">+</button>
+                        </div>
+                    </div>
+                    <div class="participants-list" id="redParticipantsList"></div>
+                </div>
+            </div>
+
+            <!-- Selector de Tablero -->
+            <div class="board-config-section">
+                <div class="input-group" style="flex: 1;">
+                    <label>Tamaño del Tablero</label>
+                    <select id="boardSizeSelect">
+                        <option value="4">4 × 4 puntos (Fácil)</option>
+                        <option value="5">5 × 5 puntos (Normal)</option>
+                        <option value="6" selected>6 × 6 puntos (Equilibrado)</option>
+                        <option value="7">7 × 7 puntos (Avanzado)</option>
+                        <option value="8">8 × 8 puntos (Experto)</option>
+                        <option value="9">9 × 9 puntos (Intenso)</option>
+                        <option value="10">10 × 10 puntos (Extremo)</option>
+                    </select>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 10px;">
+                <button class="btn btn-start" id="startBattleBtn" style="flex: 1;">⚡ INICIAR BATALLA</button>
+                <button class="btn" id="resumeGameBtn" style="display: none; border-color: #ffb700; color: #ffb700;">📁
+                    CONTINUAR</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== PANTALLA 2: JUEGO ==================== -->
+    <div id="gameScreen" class="screen">
+        <div class="score-board">
+
+            <!-- <div class="current-turn-banner">
+                <span class="turn-label">TURNO ACTUAL</span>
+                <span class="turn-player blue" id="currentTurnText">MARBIN — AZUL</span>
+            </div> -->
+
+        </div>
+
+        <div class="game-layout">
+            <!-- Panel Izquierdo: dado -->
+            <div class="hud-panel">
+                <div class="hud-title">Control de Dado</div>
+                <div class="dice-container">
+                    <div class="dice-3d" id="dice3d">
+                        <div class="dice-face" id="diceFaceMain">1</div>
+                        <div class="dice-face">2</div>
+                        <div class="dice-face">3</div>
+                        <div class="dice-face">1</div>
+                        <div class="dice-face">2</div>
+                        <div class="dice-face">3</div>
+                    </div>
+                    <button class="btn dice-btn" id="rollDiceBtn">🎲 LANZAR DADO</button>
+                </div>
+                <div class="moves-counter" id="movesCounterText">Movimientos restantes: <span>0</span></div>
+                <div class="moves-counter" id="consecutiveCounterText" style="font-size: 0.75rem;">Capturas
+                    consecutivas: <span>0/3</span></div>
+                <div class="current-turn-banner">
+                    <span class="turn-label">TURNO ACTUAL</span>
+                    <span class="turn-player blue" id="currentTurnText">MARBIN — AZUL</span>
+                </div>
+                <div class="team-score blue">
+                    <span class="team-name-tag" id="blueScoreName">EQUIPO AZUL</span>
+                    <span class="score-num" id="blueScore">0</span>
+                </div>
+                <div class="team-score red">
+                    <span class="team-name-tag" id="redScoreName">EQUIPO ROJO</span>
+                    <span class="score-num" id="redScore">0</span>
+                </div>
+                <div class="hud-title" style="margin-top: 10px;">Acciones</div>
+                <div style="display: flex; gap: 8px;">
+                    <button class="btn red-btn" id="restartGameBtn" style="flex: 1; font-size: 0.8rem;">🔄
+                        Reiniciar</button>
+                    <button class="btn" id="configReturnBtn" style="flex: 1; font-size: 0.8rem;">⚙ Config</button>
+                </div>
+
+            </div>
+
+            <!-- Tablero Central -->
+            <div class="board-wrapper" id="boardWrapper"></div>
+
+            <!-- Panel Derecho: Participantes & Log -->
+            <div class="hud-panel">
+                <div class="hud-title">Participantes</div>
+                <div class="active-participants-list" id="activeParticipantsList"></div>
+            </div>
+        </div>
+        <div class="hud-panel-compact">
+            <div class="" style="margin-top: 10px;">Registro de Actividad</div>
+            <div class="activity-log" id="activityLog">
+                <div class="log-entry">Batalla iniciada. ¡Que gane el mejor!</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL REGLAS / INSTRUCTIVO ==================== -->
+    <div class="modal-overlay" id="helpModal">
+        <div class="modal-card">
+            <div class="modal-title" style="color: var(--blue-team);">📜 REGLAS DEL JUEGO</div>
+            <div class="modal-subtitle">Guía rápida de Timbiriche</div>
+
+            <div class="rules-content">
+                <div>
+                    <h4>1. Objetivo</h4>
+                    Conquistar la mayor cantidad de casillas (cuadrados) cerrando sus cuatro lados antes de que se llene
+                    todo el tablero.
+                </div>
+                <div>
+                    <h4>2. El Dado</h4>
+                    En tu turno, debes lanzar el dado 3D. El número obtenido (1, 2 o 3) representa la cantidad de
+                    líneas que puedes trazar en ese turno.
+                </div>
+                <div>
+                    <h4>3. Cierre y Puntos</h4>
+                    Si al trazar una línea completas un cuadrado, te adueñas de él y anotas un punto. Los movimientos
+                    del dado que te queden <strong>se conservan</strong>: sigue trazando líneas sin volver a lanzar.
+                    Por ejemplo, si sacas un 3 y cierras un cuadrado en tu primer movimiento, aún te quedan 2.
+                </div>
+                <div>
+                    <h4>4. Turno Extra</h4>
+                    Si cierras un cuadrado con tu <strong>último</strong> movimiento del dado, repites turno y
+                    lanzas el dado de nuevo. Si no cierras ninguno, el turno pasa al siguiente jugador.
+                </div>
+                <div>
+                    <h4>5. Regla de Juego Limpio (Fair Play)</h4>
+                    Para equilibrar la partida, un mismo jugador puede encadenar un <strong>máximo de 3
+                    capturas seguidas</strong>. Al llegar al límite, el turno pasa automáticamente al siguiente
+                    jugador, aunque le queden movimientos.
+                </div>
+            </div>
+
+            <button class="btn btn-start" id="closeHelpBtn">¡Entendido! 🎉</button>
+        </div>
+    </div>
+
+    <!-- ==================== MODAL VICTORIA ==================== -->
+    <div class="modal-overlay" id="victoryModal">
+        <div class="modal-card">
+            <div class="victory-trophy" id="victoryIcon">🏆</div>
+            <div class="modal-title" id="victoryTitle">¡VICTORIA!</div>
+            <div class="modal-subtitle" id="victorySubtitle">El equipo azul conquistó la mayoría de territorios.</div>
+
+            <div class="victory-stats">
+                <div class="stat-box">
+                    <span class="team" id="modalBlueTag" style="color: var(--blue-team);">AZUL</span>
+                    <span class="count" id="modalBlueScore">0</span>
+                </div>
+                <div style="display: flex; align-items: center; font-weight: 800; color: var(--text-muted);">VS</div>
+                <div class="stat-box">
+                    <span class="team" id="modalRedTag" style="color: var(--red-team);">ROJO</span>
+                    <span class="count" id="modalRedScore">0</span>
+                </div>
+            </div>
+
+            <div style="display: flex; gap: 12px; margin-top: 10px;">
+                <button class="btn btn-start" id="playAgainBtn" style="flex: 1;">⚡ JUGAR DE NUEVO</button>
+                <button class="btn red-btn" id="modalConfigBtn" style="flex: 1;">⚙ CONFIGURACIÓN</button>
+            </div>
+        </div>
+    </div>
+
+    <footer class="game-footer">
+        <p>Desarrollado por <strong>Marbin Alarcón</strong> &copy; 2026</p>
+    </footer>
+
+    <script src="js/app.js"></script>
+</body>
+
+</html>
