@@ -91,7 +91,7 @@
 
         let gameState = {
             blueTeam: { name: 'EQUIPO AZUL', participants: ['Juan Camilo', 'Andres Eduardo', 'Francy\'s', 'Jaider', 'Luis', 'Laura'], score: 0 },
-            redTeam: { name: 'EQUIPO ROJO', participants: ['Jesús David', 'Carlos', 'Withman', 'Carla', 'Freddy', 'Andres Felipe'], score: 0 },
+            redTeam: { name: 'EQUIPO ROJO', participants: ['Jesús David', 'Carlos', 'Withman', 'Alberto', 'Freddy', 'Andres Felipe'], score: 0 },
             boardSize: 6,
             lines: { horizontal: [], vertical: [] },
             boxes: [],
